@@ -1,5 +1,5 @@
 mod tls;
 
 fn main() { 
-    tls::connect();
+    tls::connect("www.trevortomlin.com");
 }

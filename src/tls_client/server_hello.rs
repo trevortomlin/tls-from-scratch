@@ -1,4 +1,4 @@
-use ed25519_dalek::PublicKey;
+use x25519_dalek::PublicKey;
 
 pub fn parse_pubkey(server_hello: &[u8]) -> PublicKey {
     let mut iter = server_hello.iter()
@@ -25,6 +25,6 @@ pub fn parse_pubkey(server_hello: &[u8]) -> PublicKey {
         pubkey[i] = *iter.next().unwrap();
     }
 
-    PublicKey::from_bytes(&pubkey).unwrap()
+    PublicKey::from(pubkey)
     
 }

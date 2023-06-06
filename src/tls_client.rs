@@ -2,14 +2,12 @@ pub mod client_hello;
 pub mod server_hello;
 
 extern crate rand;
-extern crate ed25519_dalek;
 
 use crate::crypto;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
 use std::process::exit;
-use ed25519_dalek::PublicKey;
 
 // https://techcommunity.microsoft.com/t5/iis-support-blog/ssl-tls-alert-protocol-and-the-alert-codes/ba-p/377132
 fn alert(alert: u8) {
@@ -45,20 +43,22 @@ fn alert(alert: u8) {
 pub fn connect(host: &str) {
     
     let client_key = crypto::client_key_exchange_generation();
-    let client_hello = client_hello::client_hello(host, client_key.public);
+    let client_hello = client_hello::client_hello(host, client_key.pubkey);
 
     if let Ok(mut stream) = TcpStream::connect(format!("{}:443", host)) {
         println!("Connected to the server!");
         stream.write(&client_hello).unwrap();
-        let mut server_hello = [0; 1024];
+        let mut server_hello = [0; 16384];
         
         stream.read(&mut server_hello);
 
         match server_hello[0] {
             0x16 => {
-
+                //println!("{:x?}", server_hello);
                 let server_pubkey = server_hello::parse_pubkey(&server_hello);
-
+                //println!("{:x?}", server_pubkey);
+                let shared_secret = crypto::shared_secret(server_pubkey, client_key.privkey);
+                //println!("{:x?}", shared_secret.as_bytes());
             },
             0x15 => {
                 println!("Server alert");

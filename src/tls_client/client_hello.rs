@@ -1,4 +1,4 @@
-use ed25519_dalek::PublicKey;
+use x25519_dalek::PublicKey;
 use rand::Rng;
 
 fn record_header(total_length: u16) -> Vec<u8> {
@@ -429,7 +429,7 @@ mod tests {
     #[test]
     fn test_extension_key_share() {
 
-        let pubkey = crypto::client_key_exchange_generation().public;
+        let pubkey = crypto::client_key_exchange_generation().pubkey;
 
         let key_share = extension_key_share(pubkey);
 

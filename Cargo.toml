@@ -8,4 +8,6 @@ edition = "2021"
 [dependencies]
 hex = "0.4.3"
 rand = "0.7.3"
+rand_os = "0.2.2"
+sha2 = "0.10.6"
 x25519-dalek = "1.2.0"

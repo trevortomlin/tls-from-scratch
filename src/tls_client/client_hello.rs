@@ -243,7 +243,7 @@ fn extension_psk_key_exchange_modes() -> Vec<u8> {
 
 }
 
-fn extension_key_share(pubkey: PublicKey) -> Vec<u8> {
+fn extension_key_share(pubkey: [u8; 32]) -> Vec<u8> {
     /*
         Extension - Key Share
         00 33 - assigned value for extension "Key Share"
@@ -259,13 +259,13 @@ fn extension_key_share(pubkey: PublicKey) -> Vec<u8> {
     key_share.extend_from_slice(&[0x00, 0x24]);
     key_share.extend_from_slice(&[0x00, 0x1d]);
     key_share.extend_from_slice(&[0x00, 0x20]);
-    key_share.extend_from_slice(&pubkey.to_bytes());
+    key_share.extend_from_slice(&pubkey);
 
     key_share
 
 }
 
-pub fn client_hello(hostname: &str, pubkey: PublicKey) -> Vec<u8> {
+pub fn client_hello(hostname: &str, pubkey: [u8; 32]) -> Vec<u8> {
     let mut result = vec![];
     
     let data = vec![
@@ -429,12 +429,12 @@ mod tests {
     #[test]
     fn test_extension_key_share() {
 
-        let pubkey = crypto::client_key_exchange_generation().pubkey;
+        let pubkey = crypto::client_key_exchange_generation().public;
 
         let key_share = extension_key_share(pubkey);
 
         let mut expected = vec![0x00, 0x33, 0x00, 0x26, 0x00, 0x24, 0x00, 0x1d, 0x00, 0x20];
-        expected.extend_from_slice(&pubkey.to_bytes());
+        expected.extend_from_slice(&pubkey);
 
 
         assert_eq!(key_share, expected);

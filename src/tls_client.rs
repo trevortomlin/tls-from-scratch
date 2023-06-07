@@ -43,7 +43,7 @@ fn alert(alert: u8) {
 pub fn connect(host: &str) {
     
     let client_key = crypto::client_key_exchange_generation();
-    let client_hello = client_hello::client_hello(host, client_key.pubkey);
+    let client_hello = client_hello::client_hello(host, client_key.public);
 
     if let Ok(mut stream) = TcpStream::connect(format!("{}:443", host)) {
         println!("Connected to the server!");
@@ -57,7 +57,7 @@ pub fn connect(host: &str) {
                 //println!("{:x?}", server_hello);
                 let server_pubkey = server_hello::parse_pubkey(&server_hello);
                 //println!("{:x?}", server_pubkey);
-                let shared_secret = crypto::shared_secret(server_pubkey, client_key.privkey);
+                let shared_secret = crypto::shared_secret(server_pubkey, client_key.public);
                 //println!("{:x?}", shared_secret.as_bytes());
             },
             0x15 => {

@@ -41,7 +41,9 @@ impl HkdfLabel {
     pub fn to_be_bytes(&self) -> Vec<u8> {
         let mut hkdf_label = Vec::new();
         hkdf_label.extend_from_slice(&self.length.to_be_bytes());
-        hkdf_label.push(0x0d); // This is carriage return idk why it is added
+        //hkdf_label.push(0x0d); // This is carriage return idk why it is added
+        // push length of tls13 + label
+        hkdf_label.push(("tls13 ".len() + &self.label.len()) as u8);
         hkdf_label.extend_from_slice("tls13 ".as_bytes());
         hkdf_label.extend_from_slice(&self.label);
         hkdf_label.extend_from_slice(&(self.length as u8).to_be_bytes()); // This doesn't seem to be in any of the specs but its in the illustrated tls1.3 guide
@@ -202,8 +204,8 @@ mod tests {
         hasher.update(&handshake_messages);
         let handshake_hash = hasher.finalize();
 
-        // convert handshake hash to [u8; 32]
-        let handshake_hash: [u8; 32] = handshake_hash.as_slice()[..32].try_into().unwrap();
+        // convert handshake hash to [u8; 48]
+        let handshake_hash: [u8; 48] = handshake_hash.as_slice()[..48].try_into().unwrap();
 
         //derive_keys(shared_secret, handshake_hash);
 
@@ -263,11 +265,27 @@ mod tests {
 
         let hkdf_label = HkdfLabel::new(length, label, context);
 
+        //println!("HKDF Label 2: {:x?}", &hkdf_label.to_be_bytes());
+
         let client_secret = hkdf_expand_label(&handshake_secret, hkdf_label);
 
         let expected_client_secret = hex!("db89d2d6df0e84fed74a2288f8fd4d0959f790ff23946cdf4c26d85e51bebd42ae184501972f8d30c4a3e4a3693d0ef0");
 
         assert_eq!(&client_secret[..], &expected_client_secret[..]);
+
+        let label = b"s hs traffic".to_vec();
+        let context = handshake_hash.to_vec();
+        let length = 48u16;
+
+        let hkdf_label = HkdfLabel::new(length, label, context);
+
+        //println!("HKDF Label 3: {:x?}", &hkdf_label.to_be_bytes());
+
+        let server_secret = hkdf_expand_label(&handshake_secret, hkdf_label);
+
+        let expected_server_secret = hex!("23323da031634b241dd37d61032b62a4f450584d1f7f47983ba2f7cc0cdcc39a68f481f2b019f9403a3051908a5d1622");
+
+        assert_eq!(&server_secret[..], &expected_server_secret[..]);
 
     }
 
